@@ -29,22 +29,7 @@ var AddSession = registerComponent({
 		$('#submit_add_session')
 			.off('click')
 			.on('click', function() {
-				var testjson = {
-				    "name": "AWS",
-				    "tag": "work",
-				    "pomList": [
-				        {
-				            "workMinutes": 25,
-				            "breakMinutes": 5
-				        },
-				        {
-				            "workMinutes": 45,
-				            "breakMinutes": 15
-				        }
-				    ]
-				};
-
-				console.log(testjson);
+				console.log(test_json);
 				// AddSession.hide();
 			})
 	}

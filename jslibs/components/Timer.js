@@ -22,9 +22,13 @@ var TimerUI = registerComponent({
 	    	$('#timer_minutes').text(timer_time.minutes);
 	    	$('#timer_seconds').text(timer_time.seconds);
 
-	    	var extras = TimerExtra.status(timer_time.total_seconds);
+	    	var extras = TimerExtra.status({
+		    	total: timer_time.total_seconds,
+		    	minutes: timer_time.minutes
+	    	});
+
 			$('#extra_status').text(extras.status);
-	    	$('#extra_more').text(extras.more);	    	
+	    	$('#extra_more').text(extras.more); 	
 	    }, 500);
 	}
 });
@@ -76,17 +80,86 @@ var Timer = {
 };
 
 var TimerExtra = {
-	_settings: {},
+	_settings: undefined,
+	_timeline: [],
+
 	set: function(obj) {
-		if (!obj)
+		if (obj)
 			TimerExtra._settings = obj;
+		TimerExtra._createTimeline();
+		console.log('timeline', TimerExtra._timeline);
 	},
 
-	status: function(seconds_elapsed) {
-		return {
-			'status': 'Phase '+seconds_elapsed,
-			'more': 'Some Random Stuff'
+	_createTimeline: function() {
+		if (!TimerExtra._settings)
+			return;
+
+		if (!TimerExtra._settings.pomList)
+			return;
+
+		var tm = 0;
+		for (var i = 0; i < TimerExtra._settings.pomList.length; i++) {
+			var wk = {
+				'time': tm,
+				'type': 'work',
+				'pic' : 'Pic: Work for ' + TimerExtra._settings.pomList[i].workMinutes + ' minutes'
+			};
+
+			TimerExtra._timeline.push(wk);
+
+			tm += TimerExtra._settings.pomList[i].workMinutes;
+
+			var brk = {
+				'time': tm,
+				'type': 'break',
+				'pic' : 'Pic: Break for ' + TimerExtra._settings.pomList[i].breakMinutes + ' minutes'
+			};
+
+			tm += TimerExtra._settings.pomList[i].breakMinutes;
+
+			TimerExtra._timeline.push(brk);
 		}
+
+		var endk = {
+			'time': tm,
+			'type': 'end',
+			'pic' : 'Pic: End'
+		};
+
+		TimerExtra._timeline.push(endk);
+	},
+
+	_findTimelineInd: function(minutes) {
+		var ind = 0;
+		for (var i = 0; i < TimerExtra._timeline.length; i++) {
+			if (minutes >= TimerExtra._timeline[i].time)
+				ind = i;
+			else
+				break;
+		}
+
+		return ind;
+	},
+
+	status: function(cur_time) {
+		var ret_obj = {
+			name: 'Default name',
+			tag: 'Default tag',
+			status: 'Default Status',
+			more: 'Default More'
+		};
+
+		if (!TimerExtra._settings)
+			return ret_obj;
+
+		ret_obj.name = TimerExtra._settings.name;
+		ret_obj.tag = TimerExtra._settings.tag;
+		
+		var ind = TimerExtra._findTimelineInd(cur_time.minutes);
+		ret_obj.status = TimerExtra._timeline[ind].type;
+		ret_obj.more = TimerExtra._timeline[ind].pic;
+
+		return ret_obj;
 	}
 };
 
