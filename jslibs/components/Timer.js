@@ -2,6 +2,9 @@ var TimerUI = registerComponent({
 	uid: 'timer',
 	html: `
 		<p>
+			<span id="timer_session_name"></span>
+		</p>
+		<p>
 			<span id="timer_minutes">00</span>:<span id="timer_seconds">00</span>
 		</p>
 		<p><span id="extra_status"></span></p>
@@ -17,8 +20,9 @@ var TimerUI = registerComponent({
 	bindings: function() {
 		Timer.init();
 
-	    var timer = setInterval(function() {
+	    function showTimerSettings() {
 	    	var timer_time = Timer.getTime();
+
 	    	$('#timer_minutes').text(timer_time.minutes);
 	    	$('#timer_seconds').text(timer_time.seconds);
 
@@ -27,9 +31,22 @@ var TimerUI = registerComponent({
 		    	minutes: timer_time.minutes
 	    	});
 
-			$('#extra_status').text(extras.status);
-	    	$('#extra_more').text(extras.more); 	
-	    }, 500);
+			$('#timer_session_name').text(extras.name + ' (' + extras.tag + ')');
+
+			var status_text = '', more_text = '';
+
+			if (timer_time.total_seconds > 0) {
+				status_text = 'Now: ' + extras.status;
+				more_text = extras.more;
+
+		    }
+
+		    $('#extra_status').text(status_text);
+    		$('#extra_more').text(more_text); 
+	    }
+
+		showTimerSettings();
+	    var timer = setInterval(showTimerSettings, 500);
 	}
 });
 
@@ -101,8 +118,8 @@ var TimerExtra = {
 		for (var i = 0; i < TimerExtra._settings.pomList.length; i++) {
 			var wk = {
 				'time': tm,
-				'type': 'work',
-				'pic' : 'Pic: Work for ' + TimerExtra._settings.pomList[i].workMinutes + ' minutes'
+				'type': 'Work',
+				'pic' : 'Next break in ' + TimerExtra._settings.pomList[i].workMinutes + ' minutes'
 			};
 
 			TimerExtra._timeline.push(wk);
@@ -111,8 +128,8 @@ var TimerExtra = {
 
 			var brk = {
 				'time': tm,
-				'type': 'break',
-				'pic' : 'Pic: Break for ' + TimerExtra._settings.pomList[i].breakMinutes + ' minutes'
+				'type': 'Break',
+				'pic' : 'Next work session in ' + TimerExtra._settings.pomList[i].breakMinutes + ' minutes'
 			};
 
 			tm += TimerExtra._settings.pomList[i].breakMinutes;
